@@ -51,8 +51,8 @@ namespace commandline {
 
   void CommandLineFlagParameter::_getSupplementaryNotes(std::vector<std::string>& supplementaryNotes) const {
     CommandLineParameter::_getSupplementaryNotes(supplementaryNotes);
-    
-    supplementaryNotes.push_back("The default value is \"" + this->defaultValue ? std::string("true") : std::string("false") + "\".");
+    std::string str = this->defaultValue ? "true" : "false";
+    supplementaryNotes.push_back("The default value is \"" + str + "\".");
   }
 
   void CommandLineFlagParameter::appendToArgList(std::vector<std::string>& argList) const {
