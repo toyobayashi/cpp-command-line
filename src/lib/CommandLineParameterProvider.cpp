@@ -143,6 +143,11 @@ std::string CommandLineParameterProvider::_defaultValueToString(const CommandLin
 }
 
 void CommandLineParameterProvider::_processArgs(const std::vector<std::string>& args) {
+  auto isInteger = [](const std::string& arg) -> bool {
+    std::regex re("^-?[1-9]\\d*$");
+    std::smatch sm;
+    return std::regex_match(arg, sm, re);
+  };
   for (CommandLineParameter* p : this->_parameters) {
     if (!p->required) {
       p->_setValue();
@@ -159,7 +164,7 @@ void CommandLineParameterProvider::_processArgs(const std::vector<std::string>& 
         parameter->_setValue(value);
         parameter->setHasValue();
       } else {
-        if (args.size() > i + 1 && args[i + 1][0] != '-') {
+        if (args.size() > i + 1 && ((args[i + 1].length() > 0 && args[i + 1][0] != '-') || isInteger(args[i + 1]))) {
           CommandLineParameter* parameter = this->_getParameter(arg);
           parameter->_setValue(args[i + 1]);
           parameter->setHasValue();
@@ -182,15 +187,7 @@ void CommandLineParameterProvider::_processArgs(const std::vector<std::string>& 
               parameter->setHasValue();
               i++;
             } else {
-              char nums[10] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-              bool isnum = false;
-              for (int i = 0; i < 10; i++) {
-                if (nums[i] == nextArg[1]) {
-                  isnum = true;
-                  break;
-                }
-              }
-              if (nextArg.length() > 1 && isnum) {
+              if (nextArg.length() > 1 && isInteger(nextArg)) {
                 CommandLineParameter* parameter = this->_getParameter(arg);
                 parameter->_setValue((int64_t)std::strtoll(nextArg.c_str(), nullptr, 10));
                 parameter->setHasValue();

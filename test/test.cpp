@@ -221,6 +221,35 @@ static int parses_an_input_with_ALL_parameters() {
   return 0;
 }
 
+static int parses_an_input_with_NO_parameters() {
+  std::unique_ptr<DynamicCommandLineParser> commandLineParser(createParser());
+  CommandLineAction* action = commandLineParser->getAction("do:the-job");
+  std::vector<std::string> args = {
+    "do:the-job",
+    "--integer-required", "-123"
+  };
+  try {
+    commandLineParser->execute(args);
+    expect(commandLineParser->selectedAction == action);
+    expect(commandLineParser->getFlagParameter("--global-flag")->value() == false);
+    expect(action->getChoiceParameter("--choice")->value() == "");
+    expect(action->getChoiceParameter("--choice-with-default")->value() == "default");
+    expect(action->getFlagParameter("--flag")->value() == false);
+    expect(action->getIntegerParameter("--integer")->value() == 0);
+    expect(action->getIntegerParameter("--integer-with-default")->value() == 123);
+    expect(action->getIntegerParameter("--integer-required")->value() == -123);
+    expect(action->getStringParameter("--string")->value() == "");
+    expect(action->getStringParameter("--string-with-default")->value() == "123");
+    const std::vector<std::string>& values = action->getStringListParameter("--string-list")->values();
+    expect(values.size() == 0);
+  } catch (const std::exception& err) {
+    std::cerr << err.what() << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+
 static int test_action_help() {
   std::unique_ptr<DynamicCommandLineParser> commandLineParser(createParser());
   try {
@@ -263,6 +292,7 @@ int main() {
   }
   r = describe("CommandLineParameter", 
     parses_an_input_with_ALL_parameters,
+    parses_an_input_with_NO_parameters,
     test_global_help,
     test_action_help
   );
