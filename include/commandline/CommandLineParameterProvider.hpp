@@ -29,9 +29,9 @@ class CommandLineParameterProvider {
   const std::vector<CommandLineParameter*>& parameters() const;
 
   CommandLineParameterProvider(const CommandLineParameterProvider&) = delete;
-  CommandLineParameterProvider(CommandLineParameterProvider&&) = delete;
+  CommandLineParameterProvider(CommandLineParameterProvider&&) = default;
   CommandLineParameterProvider& operator=(const CommandLineParameterProvider&) = delete;
-  CommandLineParameterProvider& operator=(CommandLineParameterProvider&&) = delete;
+  CommandLineParameterProvider& operator=(CommandLineParameterProvider&&) = default;
 
   CommandLineChoiceParameter* defineChoiceParameter(const CommandLineChoiceDefinition&);
   const CommandLineChoiceParameter* getChoiceParameter(const std::string&) const;

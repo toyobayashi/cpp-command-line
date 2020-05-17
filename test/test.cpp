@@ -232,7 +232,7 @@ static int parses_an_input_with_NO_parameters() {
     commandLineParser->execute(args);
     expect(commandLineParser->selectedAction == action);
     expect(commandLineParser->getFlagParameter("--global-flag")->value() == false);
-    expect(action->getChoiceParameter("--choice")->value() == "");
+    expect(action->getChoiceParameter("--choice")->value() == action->getChoiceParameter("--choice")->alternatives[0]);
     expect(action->getChoiceParameter("--choice-with-default")->value() == "default");
     expect(action->getFlagParameter("--flag")->value() == false);
     expect(action->getIntegerParameter("--integer")->value() == 0);

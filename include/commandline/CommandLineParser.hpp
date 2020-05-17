@@ -28,9 +28,9 @@ class CommandLineParser : public CommandLineParameterProvider {
   virtual ~CommandLineParser();
 
   CommandLineParser(const CommandLineParser&) = delete;
-  CommandLineParser(CommandLineParser&&) = delete;
+  CommandLineParser(CommandLineParser&&) = default;
   CommandLineParser& operator=(const CommandLineParser&) = delete;
-  CommandLineParser& operator=(CommandLineParser&&) = delete;
+  CommandLineParser& operator=(CommandLineParser&&) = default;
 
   const std::vector<CommandLineAction*>& actions() const;
 

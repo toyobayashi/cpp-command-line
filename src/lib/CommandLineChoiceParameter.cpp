@@ -12,13 +12,19 @@ namespace commandline {
     CommandLineParameter(definition),
     _value(""),
     alternatives(definition.alternatives),
-    defaultValue(definition.defaultValue) {
+    defaultValue("") {
     if (definition.alternatives.size() < 1) {
       throw CommandLineError(EMPTY_ALTERNATIVE_LIST, "When defining a choice parameter, the alternatives list must contain at least one value.)");
     }
 
-    if (definition.defaultValue != "" && commandline::string::indexOf(definition.alternatives, definition.defaultValue) == -1) {
-      throw CommandLineError(ERROR_ALTERNATIVE_DEFAULT_VALUE, "The specified default value \"" + definition.defaultValue + "\" is not one of the available options: " + formatStringArray(definition.alternatives));
+    if (definition.defaultValue != "") {
+      if (commandline::string::indexOf(definition.alternatives, definition.defaultValue) == -1) {
+        throw CommandLineError(ERROR_ALTERNATIVE_DEFAULT_VALUE, "The specified default value \"" + definition.defaultValue + "\" is not one of the available options: " + formatStringArray(definition.alternatives));
+      } else {
+        this->defaultValue = definition.defaultValue;
+      }
+    } else {
+      this->defaultValue = this->alternatives[0];
     }
 
     // validateDefaultValue(this->defaultValue != "");
@@ -46,7 +52,7 @@ namespace commandline {
       return;
     }
 
-    this->_value = "";
+    this->_value = this->alternatives[0];
   }
   void CommandLineChoiceParameter::_setValue(bool data) {
     reportInvalidData(data);

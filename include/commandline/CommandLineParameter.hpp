@@ -75,7 +75,7 @@ namespace commandline {
 
    public:
     const std::vector<std::string> alternatives;
-    const std::string defaultValue;
+    std::string defaultValue;
 
     CommandLineChoiceParameter(const CommandLineChoiceDefinition&);
 

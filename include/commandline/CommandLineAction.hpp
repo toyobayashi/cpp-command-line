@@ -21,9 +21,9 @@ class CommandLineAction : public CommandLineParameterProvider {
   virtual ~CommandLineAction();
 
   CommandLineAction(const CommandLineAction&) = delete;
-  CommandLineAction(CommandLineAction&&) = delete;
+  CommandLineAction(CommandLineAction&&) = default;
   CommandLineAction& operator=(const CommandLineAction&) = delete;
-  CommandLineAction& operator=(CommandLineAction&&) = delete;
+  CommandLineAction& operator=(CommandLineAction&&) = default;
 
   virtual void _processArgs(const std::vector<std::string>&);
 
