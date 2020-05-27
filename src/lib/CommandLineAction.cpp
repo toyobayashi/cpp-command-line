@@ -1,6 +1,6 @@
 #include "commandline/CommandLineAction.hpp"
 #include "commandline/CommandLineError.hpp"
-
+#include <iostream>
 namespace commandline {
 
 std::regex CommandLineAction::_actionNameRegExp("^[a-z][a-z0-9]*([-:][a-z0-9]+)*$");
@@ -131,6 +131,19 @@ std::string CommandLineAction::renderHelpText(const std::string& toolFilename) c
   }
 
   return usage + optionPart;
+}
+
+void* CommandLineAction::operator new(size_t size) {
+  return ::operator new(size);
+}
+void* CommandLineAction::operator new[](size_t size) {
+  return ::operator new(size);
+}
+void CommandLineAction::operator delete(void* p) noexcept {
+  ::operator delete(p);
+}
+void CommandLineAction::operator delete[](void* p) noexcept {
+  ::operator delete(p);
 }
 
 }

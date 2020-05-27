@@ -8,8 +8,6 @@ namespace commandline {
   std::regex CommandLineParameter::_shortNameRegExp("^-[a-zA-Z]$");
   std::regex CommandLineParameter::_environmentVariableRegExp("^[A-Z_][A-Z0-9_]*$");
 
-  CommandLineParameter::~CommandLineParameter() {}
-
   CommandLineParameter::CommandLineParameter(const BaseCommandLineDefinition& definition):
     _hasValue(false),
     // _parserKey(""),

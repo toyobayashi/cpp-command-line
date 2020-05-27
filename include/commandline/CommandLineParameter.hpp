@@ -23,7 +23,7 @@ namespace commandline {
     const std::string environmentVariable;
 
     CommandLineParameter(const BaseCommandLineDefinition&);
-    virtual ~CommandLineParameter();
+    virtual ~CommandLineParameter() = default;
 
     CommandLineParameter(const CommandLineParameter&) = default;
     CommandLineParameter(CommandLineParameter&&) = default;

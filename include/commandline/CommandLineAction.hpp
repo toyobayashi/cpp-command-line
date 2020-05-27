@@ -25,6 +25,11 @@ class CommandLineAction : public CommandLineParameterProvider {
   CommandLineAction& operator=(const CommandLineAction&) = delete;
   CommandLineAction& operator=(CommandLineAction&&) = default;
 
+  static void* operator new(size_t);
+  static void* operator new[](size_t);
+  static void operator delete(void*) noexcept;
+  static void operator delete[](void*) noexcept;
+
   virtual void _processArgs(const std::vector<std::string>&);
 
   virtual void onDefineParameters() = 0;
