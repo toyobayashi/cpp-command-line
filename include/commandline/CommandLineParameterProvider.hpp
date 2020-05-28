@@ -3,7 +3,7 @@
 
 #include <map>
 #include "CommandLineParameter.hpp"
-#include "CommandLineDefinition.hpp"
+#include "CommandLineRemainder.hpp"
 
 namespace commandline {
 
@@ -12,12 +12,13 @@ class CommandLineParameterProvider {
   std::vector<CommandLineParameter*> _parameters;
   std::map<std::string, CommandLineParameter*> _parametersByLongName;
   std::map<std::string, CommandLineParameter*> _parametersByShortName;
-  
+
   CommandLineParameter* _getParameter(const std::string&) const;
   const CommandLineParameter* _getParameter(const std::string&, CommandLineParameterKind) const;
   CommandLineParameter* _tryGetParameter(const std::string&) const;
   void _defineParameter(CommandLineParameter*);
  protected:
+  CommandLineRemainder* _remainder;
   static std::string _defaultValueToString(const CommandLineParameter*);
   static std::string _kindToString(CommandLineParameterKind);
   static std::string _kindToString(const CommandLineParameter*);
@@ -27,6 +28,7 @@ class CommandLineParameterProvider {
   virtual ~CommandLineParameterProvider();
 
   const std::vector<CommandLineParameter*>& parameters() const;
+  const CommandLineRemainder* remainder() const;
 
   CommandLineParameterProvider(const CommandLineParameterProvider&) = delete;
   CommandLineParameterProvider(CommandLineParameterProvider&&) = default;
@@ -46,6 +48,8 @@ class CommandLineParameterProvider {
 
   CommandLineStringListParameter* defineStringListParameter(const CommandLineStringListDefinition&);
   const CommandLineStringListParameter* getStringListParameter(const std::string&) const;
+
+  const CommandLineRemainder* defineCommandLineRemainder(const CommandLineRemainderDefinition&);
 
   // virtual std::string renderHelpText() const = 0;
 

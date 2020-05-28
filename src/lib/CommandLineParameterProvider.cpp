@@ -7,9 +7,13 @@ namespace commandline {
 CommandLineParameterProvider::CommandLineParameterProvider():
   _parameters(),
   _parametersByLongName(),
-  _parametersByShortName() {}
+  _parametersByShortName(),
+  _remainder(nullptr) {}
 
 CommandLineParameterProvider::~CommandLineParameterProvider() {
+  if (_remainder != nullptr) {
+    delete _remainder;
+  }
   for (CommandLineParameter* p : this->_parameters) {
     delete p;
   }
@@ -17,6 +21,19 @@ CommandLineParameterProvider::~CommandLineParameterProvider() {
 
 const std::vector<CommandLineParameter*>& CommandLineParameterProvider::parameters() const {
   return this->_parameters;
+}
+
+const CommandLineRemainder* CommandLineParameterProvider::remainder() const {
+  return this->_remainder;
+}
+
+const CommandLineRemainder* CommandLineParameterProvider::defineCommandLineRemainder(const CommandLineRemainderDefinition& definition) {
+  if (this->_remainder != nullptr) {
+    throw CommandLineError(REMAINDER_DEFINED, "defineRemainingArguments() has already been called for this provider");
+  }
+  this->_remainder = new CommandLineRemainder(definition);
+
+  return this->_remainder;
 }
 
 CommandLineChoiceParameter* CommandLineParameterProvider::defineChoiceParameter(const CommandLineChoiceDefinition& definition) {
@@ -117,6 +134,9 @@ std::string CommandLineParameterProvider::_kindToString(const CommandLineParamet
 }
 
 void CommandLineParameterProvider::_defineParameter(CommandLineParameter* parameter) {
+  if (this->_remainder) {
+    throw CommandLineError(REMAINDER_DEFINED, "defineCommandLineRemainder() was already called for this provider; no further parameters can be defined");
+  }
   this->_parameters.push_back(parameter);
   this->_parametersByLongName[parameter->longName] = parameter;
   if (parameter->shortName != "") {
@@ -153,7 +173,8 @@ void CommandLineParameterProvider::_processArgs(const std::vector<std::string>& 
       p->_setValue();
     }
   }
-  for (size_t i = 0; i < args.size(); i++) {
+  size_t i = 0;
+  for (; i < args.size(); i++) {
     const std::string& arg = args[i];
     if (arg.length() > 2 && arg[0] == '-' && arg[1] == '-') { // --name
       if (arg.find("=") != std::string::npos) {
@@ -166,9 +187,14 @@ void CommandLineParameterProvider::_processArgs(const std::vector<std::string>& 
       } else {
         if (args.size() > i + 1 && ((args[i + 1].length() > 0 && args[i + 1][0] != '-') || isInteger(args[i + 1]))) {
           CommandLineParameter* parameter = this->_getParameter(arg);
-          parameter->_setValue(args[i + 1]);
-          parameter->setHasValue();
-          i++;
+          if (parameter->kind() == CommandLineParameterKind::Flag && this->_remainder != nullptr) {
+            parameter->_setValue(true);
+            parameter->setHasValue();
+          } else {
+            parameter->_setValue(args[i + 1]);
+            parameter->setHasValue();
+            i++;
+          }
         } else {
           CommandLineParameter* parameter = this->_getParameter(arg);
           parameter->_setValue(true);
@@ -220,6 +246,15 @@ void CommandLineParameterProvider::_processArgs(const std::vector<std::string>& 
       break;
     }
   }
+  
+  if (this->_remainder != nullptr) {
+    std::vector<std::string> remain;
+    for (; i < args.size(); i++) {
+      remain.push_back(args[i]);
+    }
+    this->_remainder->_setValue(remain);
+  }
+
   for (CommandLineParameter* p : this->_parameters) {
     if (p->required) {
       if (!p->hasValue()) {

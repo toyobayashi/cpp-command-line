@@ -70,6 +70,9 @@ CommandLineAction* CommandLineParser::tryGetAction(const std::string& actionName
 }
 
 void CommandLineParser::onExecute() {
+  if (this->selectedAction == nullptr) {
+    return;
+  }
   this->selectedAction->_execute();
 }
 
@@ -89,11 +92,20 @@ void CommandLineParser::execute(int argc, wchar_t** argv) {
   this->execute(args);
 }
 
+void CommandLineParser::_validateDefinitions() const {
+  if (this->_remainder != nullptr && this->_actions.size() > 0) {
+    // This is apparently not supported by argparse
+    throw CommandLineError(REMAINDER_DEFINED, "defineCommandLineRemainder() cannot be called for a CommandLineParser with actions");
+  }
+}
+
 void CommandLineParser::execute(const std::vector<std::string>& args) {
   if (this->_executed) {
     throw CommandLineError(EXECUTE_AGAIN, "execute() was already called for this parser instance");
   }
   this->_executed = true;
+
+  this->_validateDefinitions();
 
   size_t length = args.size();
   if (length == 0) {
@@ -135,29 +147,46 @@ void CommandLineParser::execute(const std::vector<std::string>& args) {
     return;
   }
 
-  if (i == length) {
-    throw CommandLineError(ACTION_UNKNOWN, "Unrecognized action");
-  }
+  if (this->_remainder != nullptr) {
+    // std::vector<std::string> remain;
+    // for (size_t x = i; x < length; x++) {
+    //   remain.push_back(args[x]);
+    // }
+    // this->_remainder->_setValue(remain);
 
-  try {
-    this->selectedAction = this->getAction(args[i]);
-    i++;
-  } catch (const CommandLineError&) {
-    throw CommandLineError(ACTION_UNDEFINED, "Unrecognized action");
-  }
+    for (size_t x = i; x < length; x++) {
+      mainArgs.push_back(args[x]);
+    }
+    this->_processArgs(mainArgs);
+    this->onExecute();
+  } else {
+    if (i == length) {
+      // throw CommandLineError(ACTION_UNKNOWN, "Unrecognized action");
+      this->_processArgs(mainArgs);
+      this->onExecute();
+      return;
+    }
 
-  for (; i < length; i++) {
-    actionArgs.push_back(args[i]);
-  }
+    try {
+      this->selectedAction = this->getAction(args[i]);
+      i++;
+    } catch (const CommandLineError&) {
+      throw CommandLineError(ACTION_UNDEFINED, "Unrecognized action");
+    }
 
-  if (commandline::string::indexOf(actionArgs, "-h") != -1 || commandline::string::indexOf(actionArgs, "--help") != -1) {
-    std::cout << this->selectedAction->renderHelpText(this->toolFilename) << std::endl;
-    return;
-  }
+    for (; i < length; i++) {
+      actionArgs.push_back(args[i]);
+    }
 
-  this->_processArgs(mainArgs);
-  this->selectedAction->_processArgs(actionArgs);
-  this->onExecute();
+    if (commandline::string::indexOf(actionArgs, "-h") != -1 || commandline::string::indexOf(actionArgs, "--help") != -1) {
+      std::cout << this->selectedAction->renderHelpText(this->toolFilename) << std::endl;
+      return;
+    }
+
+    this->_processArgs(mainArgs);
+    this->selectedAction->_processArgs(actionArgs);
+    this->onExecute();
+  }
 }
 
 std::string CommandLineParser::renderHelpText() const {
@@ -235,7 +264,7 @@ std::string CommandLineParser::renderHelpText() const {
     }
   }
 
-  usage += shortOptions + " <command> ..." + EOL + EOL + this->toolDescription + EOL + EOL;
+  usage += shortOptions + (this->_remainder == nullptr ? (" <command> ...") : (" " + this->_remainder->argumentName)) + EOL + EOL + this->toolDescription + EOL + EOL;
 
   std::string actionPart = "";
   if (this->_actions.size() > 0) {
@@ -262,7 +291,10 @@ std::string CommandLineParser::renderHelpText() const {
     }
   }
 
-  std::string foot = EOL + "For detailed help about a specific command, use: example <command> -h";
+  std::string foot = "";
+  if (this->_remainder == nullptr && this->_actions.size() > 0) {
+    foot = EOL + "For detailed help about a specific command, use: example <command> -h";
+  }
 
   return usage + actionPart + EOL + optionPart + foot;
 }

@@ -4,10 +4,6 @@
 #include <cstddef>
 
 namespace commandline {
-  std::regex CommandLineParameter::_longNameRegExp("^-(-[a-z0-9]+)+$");
-  std::regex CommandLineParameter::_shortNameRegExp("^-[a-zA-Z]$");
-  std::regex CommandLineParameter::_environmentVariableRegExp("^[A-Z_][A-Z0-9_]*$");
-
   CommandLineParameter::CommandLineParameter(const BaseCommandLineDefinition& definition):
     _hasValue(false),
     // _parserKey(""),
@@ -16,15 +12,18 @@ namespace commandline {
     description(definition.description),
     required(definition.required),
     environmentVariable(definition.environmentVariable) {
-
+    
+    std::regex _longNameRegExp("^-(-[a-z0-9]+)+$");
+    std::regex _shortNameRegExp("^-[a-zA-Z]$");
+    std::regex _environmentVariableRegExp("^[A-Z_][A-Z0-9_]*$");
     std::smatch sm;
 
-    if (!std::regex_match(this->longName, sm, CommandLineParameter::_longNameRegExp)) {
+    if (!std::regex_match(this->longName, sm, _longNameRegExp)) {
       throw CommandLineError(INVALID_NAME, "Invalid name: \"" + this->longName + "\". The parameter long name must be lower-case and use dash delimiters (e.g. \"--do-a-thing\")");
     }
 
     if (this->shortName != "") {
-      if (!std::regex_match(this->shortName, sm, CommandLineParameter::_shortNameRegExp)) {
+      if (!std::regex_match(this->shortName, sm, _shortNameRegExp)) {
         throw CommandLineError(INVALID_NAME, "Invalid name: \"" + this->shortName + "\". The parameter short name must be a dash followed by a single upper-case or lower-case letter (e.g. \"-a\")");
       }
     }
@@ -34,7 +33,7 @@ namespace commandline {
         throw CommandLineError(INVALID_ENV, "An \"environmentVariable\" cannot be specified for \"" + this->longName + "\" because it is a required parameter");
       }
 
-      if (!std::regex_match(this->environmentVariable, sm, CommandLineParameter::_environmentVariableRegExp)) {
+      if (!std::regex_match(this->environmentVariable, sm, _environmentVariableRegExp)) {
         throw CommandLineError(INVALID_NAME, "Invalid environment variable name: \"" + this->environmentVariable + "\". The name must consist only of upper-case letters, numbers, and underscores. It may not start with a number.");
       }
     }

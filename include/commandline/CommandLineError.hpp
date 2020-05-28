@@ -20,6 +20,7 @@ namespace commandline {
     VALUE_REQUIRED,
     ACTION_UNKNOWN,
     ACTION_UNDEFINED,
+    REMAINDER_DEFINED,
     EXECUTE_AGAIN
   } CommandLineErrorCode;
   class CommandLineError : public std::exception {

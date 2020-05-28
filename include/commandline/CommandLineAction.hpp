@@ -8,8 +8,6 @@
 namespace commandline {
 
 class CommandLineAction : public CommandLineParameterProvider {
- private:
-  static std::regex _actionNameRegExp;
  protected:
   void _init(const CommandLineActionOptions&);
  public:

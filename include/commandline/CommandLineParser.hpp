@@ -12,7 +12,9 @@ class CommandLineParser : public CommandLineParameterProvider {
   CommandLineParserOptions _options;
   std::vector<CommandLineAction*> _actions;
   std::map<std::string, CommandLineAction*> _actionsByName;
-  bool _executed; 
+  bool _executed;
+
+  void _validateDefinitions() const;
  protected:
   virtual std::string _getName() const;
   virtual std::string _getDescription() const;

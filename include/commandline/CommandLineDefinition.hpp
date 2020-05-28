@@ -38,6 +38,11 @@ namespace commandline {
   struct CommandLineStringListDefinition : BaseCommandLineDefinitionWithArgument {
   };
 
+  struct CommandLineRemainderDefinition {
+    std::string argumentName = "...";
+    std::string description = "";
+  };
+
   struct CommandLineActionOptions {
     std::string actionName = "";
     std::string summary = "";

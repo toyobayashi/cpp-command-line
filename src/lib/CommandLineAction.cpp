@@ -3,8 +3,6 @@
 #include <iostream>
 namespace commandline {
 
-std::regex CommandLineAction::_actionNameRegExp("^[a-z][a-z0-9]*([-:][a-z0-9]+)*$");
-
 CommandLineAction::CommandLineAction():
   CommandLineParameterProvider(),
   actionName(),
@@ -23,6 +21,7 @@ void CommandLineAction::_init(const CommandLineActionOptions& options) {
   summary = options.summary;
   documentation = options.documentation;
 
+  std::regex _actionNameRegExp("^[a-z][a-z0-9]*([-:][a-z0-9]+)*$");
   std::smatch sm;
   if (!std::regex_match(options.actionName, sm, _actionNameRegExp)) {
     throw CommandLineError(INVALID_NAME, "Invalid action name \"" + options.actionName + "\". The name must be comprised of lower-case words optionally separated by hyphens or colons.");
@@ -115,7 +114,7 @@ std::string CommandLineAction::renderHelpText(const std::string& toolFilename) c
     }
   }
 
-  usage += shortOptions + EOL + EOL + this->documentation + EOL + EOL;
+  usage += shortOptions + (this->_remainder != nullptr ? (" " + this->_remainder->argumentName) : "") + EOL + EOL + this->documentation + EOL + EOL;
 
   std::string optionPart = "Options:" + EOL;
   const size_t len = indent;

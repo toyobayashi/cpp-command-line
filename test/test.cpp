@@ -38,7 +38,7 @@ class TestAction : public CommandLineAction {
 };
 
 class TestCommandLine : public CommandLineParser {
-  public:
+ public:
   TestCommandLine(): CommandLineParser() {
     CommandLineParserOptions o;
     o.toolFilename = "example";
@@ -47,6 +47,48 @@ class TestCommandLine : public CommandLineParser {
     this->addAction(new TestAction());
   }
 };
+
+class ActionlessParser : public CommandLineParser {
+ public:
+  CommandLineFlagParameter* flag;
+  ActionlessParser(): CommandLineParser() {
+    CommandLineParserOptions o;
+    o.toolFilename = "example";
+    o.toolDescription = "An example project";
+    this->_init(o);
+
+    CommandLineFlagDefinition d;
+    d.parameterLongName = "--flag";
+    d.description = "The flag";
+    this->flag = this->defineFlagParameter(d);
+  }
+};
+
+static int parse_a_flag () {
+  ActionlessParser commandLineParser;
+  commandLineParser.execute({ "--flag" });
+  expect(commandLineParser.selectedAction == nullptr);
+  expect(commandLineParser.flag->value() == true);
+  return 0;
+}
+
+static int parses_a_flag_and_remainder () {
+  ActionlessParser commandLineParser;
+
+  CommandLineRemainderDefinition d;
+  d.description = "remainder description";
+  commandLineParser.defineCommandLineRemainder(d);
+
+  commandLineParser.execute({ "--flag", "the", "remaining", "args" });
+  expect(commandLineParser.selectedAction == nullptr);
+  expect(commandLineParser.flag->value() == true);
+  auto values = commandLineParser.remainder()->values();
+  expect(values.size() == 3);
+  expect(values[0] == "the");
+  expect(values[1] == "remaining");
+  expect(values[2] == "args");
+  return 0;
+}
 
 static int executes_an_action() {
   TestCommandLine commandLineParser;
@@ -184,6 +226,77 @@ static DynamicCommandLineParser* createParser() {
   return commandLineParser;
 }
 
+static DynamicCommandLineParser* createParser2() {
+  CommandLineParserOptions options;
+  options.toolFilename = "example";
+  options.toolDescription = "An example project";
+  DynamicCommandLineParser* commandLineParser = new DynamicCommandLineParser(options);
+
+  CommandLineFlagDefinition d;
+  d.parameterLongName = "--verbose";
+  d.description = "A flag that affects all actions";
+  commandLineParser->defineFlagParameter(d);
+
+  CommandLineActionOptions actionOptions;
+  actionOptions.actionName = "run";
+  actionOptions.summary = "does the job";
+  actionOptions.documentation = "a longer description";
+  DynamicCommandLineAction* action = new DynamicCommandLineAction(actionOptions);
+  commandLineParser->addAction(action);
+
+  CommandLineStringDefinition sd;
+  sd.parameterLongName = "--title";
+  sd.description = "A string";
+  sd.argumentName = "TEXT";
+  action->defineStringParameter(sd);
+
+  CommandLineRemainderDefinition rd;
+  rd.argumentName = "[...remaining args]";
+  rd.description = "The action remainder";
+  action->defineCommandLineRemainder(rd);
+
+  return commandLineParser;
+}
+
+static int parses_an_action_input_with_remainder() {
+  std::unique_ptr<DynamicCommandLineParser> commandLineParser(createParser2());
+  CommandLineAction* action = commandLineParser->getAction("run");
+  commandLineParser->execute({ "run", "--title", "The title", "the", "remaining", "args" });
+
+  expect(commandLineParser->selectedAction == action);
+  expect(action->getStringParameter("--title")->value() == "The title");
+  auto values = action->remainder()->values();
+  expect(values.size() == 3);
+  expect(values[0] == "the");
+  expect(values[1] == "remaining");
+  expect(values[2] == "args");
+  return 0;
+}
+
+static int prints_the_action_help() {
+  std::unique_ptr<DynamicCommandLineParser> commandLineParser(createParser2());
+  try {
+    commandLineParser->execute({ "run", "-h" });
+  } catch (const std::exception& err) {
+    std::cerr << err.what() << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+
+static int prints_the_global_help() {
+  std::unique_ptr<DynamicCommandLineParser> commandLineParser(createParser2());
+  try {
+    commandLineParser->execute({});
+  } catch (const std::exception& err) {
+    std::cerr << err.what() << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+
 static int parses_an_input_with_ALL_parameters() {
   std::unique_ptr<DynamicCommandLineParser> commandLineParser(createParser());
   CommandLineAction* action = commandLineParser->getAction("do:the-job");
@@ -279,6 +392,23 @@ int main() {
   int ret = 0;
   r = describe("CommandLineParser", 
     executes_an_action
+  );
+  if (r != 0) {
+    ret = r;
+  }
+
+  r = describe("Actionless CommandLineParser", 
+    parse_a_flag,
+    parses_a_flag_and_remainder
+  );
+  if (r != 0) {
+    ret = r;
+  }
+
+  r = describe("CommandLineRemainder", 
+    parses_an_action_input_with_remainder,
+    prints_the_action_help,
+    prints_the_global_help
   );
   if (r != 0) {
     ret = r;

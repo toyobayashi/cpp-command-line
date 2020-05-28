@@ -7,10 +7,6 @@
 namespace commandline {
   class CommandLineParameter {
    private:
-    static std::regex _longNameRegExp;
-    static std::regex _shortNameRegExp;
-    static std::regex _environmentVariableRegExp;
-    
     bool _hasValue;
    protected:
     // std::string _parserKey;
@@ -54,9 +50,6 @@ namespace commandline {
   };
 
   class CommandLineParameterWithArgument : public CommandLineParameter {
-   private:
-    static std::regex _invalidArgumentNameRegExp;
-
    public:
     const std::string argumentName;
 

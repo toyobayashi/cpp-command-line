@@ -2,8 +2,6 @@
 #include "commandline/CommandLineError.hpp"
 
 namespace commandline {
-  std::regex CommandLineParameterWithArgument::_invalidArgumentNameRegExp("[^A-Z_0-9]");
-
   CommandLineParameterWithArgument::~CommandLineParameterWithArgument() {}
 
   CommandLineParameterWithArgument::CommandLineParameterWithArgument(const BaseCommandLineDefinitionWithArgument& definition):
@@ -24,9 +22,10 @@ namespace commandline {
       throw CommandLineError(INVALID_NAME, "Invalid name: \"" + definition.argumentName + "\". The argument name must be all upper case.");
     }
 
+    std::regex _invalidArgumentNameRegExp("[^A-Z_0-9]");
     std::smatch sm;
 
-    if (std::regex_search(definition.argumentName, sm, CommandLineParameterWithArgument::_invalidArgumentNameRegExp)) {
+    if (std::regex_search(definition.argumentName, sm, _invalidArgumentNameRegExp)) {
       throw CommandLineError(INVALID_NAME, "The argument name: \"" + definition.argumentName + "\" contains an invalid character \"" + sm[0].str() + "\". Only upper-case letters, numbers, and underscores are allowed.");
     }
   }
