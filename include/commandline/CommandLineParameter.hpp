@@ -51,7 +51,7 @@ namespace commandline {
 
   class CommandLineParameterWithArgument : public CommandLineParameter {
    public:
-    const std::string argumentName;
+    std::string argumentName;
 
     CommandLineParameterWithArgument(const BaseCommandLineDefinitionWithArgument&);
     virtual ~CommandLineParameterWithArgument();
@@ -67,7 +67,7 @@ namespace commandline {
     std::string _value;
 
    public:
-    const std::vector<std::string> alternatives;
+    std::vector<std::string> alternatives;
     std::string defaultValue;
 
     CommandLineChoiceParameter(const CommandLineChoiceDefinition&);
@@ -94,7 +94,7 @@ namespace commandline {
     bool _value;
 
    public:
-    const bool defaultValue;
+    bool defaultValue;
     CommandLineFlagParameter(const CommandLineFlagDefinition&);
 
     CommandLineParameterKind kind() const;
@@ -117,7 +117,7 @@ namespace commandline {
     int64_t _value;
 
    public:
-    const int64_t defaultValue;
+    int64_t defaultValue;
 
     CommandLineIntegerParameter(const CommandLineIntegerDefinition&);
 
@@ -141,7 +141,7 @@ namespace commandline {
     std::string _value;
 
    public:
-    const std::string defaultValue;
+    std::string defaultValue;
 
     CommandLineStringParameter(const CommandLineStringDefinition&);
 
