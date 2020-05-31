@@ -1,0 +1,48 @@
+name: test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+      # with:
+      #   submodules: recursive
+
+    - uses: actions/setup-node@v1
+
+    - run: npm install
+
+    - name: Windows
+      if: ${{ matrix.os == 'windows-latest' }}
+      shell: cmd
+      run: |
+        call .\build.bat Release static test
+        .\build\win\x64\Release\commandlinetest.exe
+
+    - name: Linux
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      shell: bash
+      env:
+        PLATFORM_NAME: linux
+      run: |
+        chmod +x ./build.sh
+        ./build.sh test
+        ./build/"$PLATFORM_NAME"/Release/commandlinetest
+
+    - name: macOS
+      if: ${{ matrix.os == 'macos-latest' }}
+      shell: bash
+      env:
+        PLATFORM_NAME: darwin
+      run: |
+        chmod +x ./build.sh
+        ./build.sh test
+        ./build/"$PLATFORM_NAME"/Release/commandlinetest
