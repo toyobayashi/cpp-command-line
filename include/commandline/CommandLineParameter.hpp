@@ -12,11 +12,11 @@ namespace commandline {
     // std::string _parserKey;
 
    public:
-    const std::string longName;
-    const std::string shortName;
-    const std::string description;
-    const bool required;
-    const std::string environmentVariable;
+    std::string longName;
+    std::string shortName;
+    std::string description;
+    bool required;
+    std::string environmentVariable;
 
     CommandLineParameter(const BaseCommandLineDefinition&);
     virtual ~CommandLineParameter() = default;
